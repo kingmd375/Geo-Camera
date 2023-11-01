@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Geo Camera</string>
     <string name="take_new_photo">Take New Photo</string>
+    <string name="desc_hint">description...</string>
+    <string name="OK">OK</string>
+    <string name="cancel">Cancel</string>
 </resources>
