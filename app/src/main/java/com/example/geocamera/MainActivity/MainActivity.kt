@@ -17,6 +17,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import com.example.geocamera.NewEditPicActivity.NewEditPicActivity
 import com.example.geocamera.R
 import com.example.geocamera.Util.LocationUtilCallback
 import com.example.geocamera.Util.createLocationCallback
@@ -35,48 +36,63 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationServices
 
 class MainActivity : AppCompatActivity() {
-    // picture stuff
-    var currentPhotoPath: String = ""
-
-    val takePictureResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        result: ActivityResult ->
-        if(result.resultCode == Activity.RESULT_CANCELED) {
-            Log.d("MainActivity", "Take picture activity cancelled")
-        } else {
-            Log.d("MainActivity", "Picture taken")
-            addNewMarker()
-        }
-    }
-
     // location stuff
     private var locationPermissionEnabled: Boolean = false
     private var locationRequestsEnabled: Boolean = false
     private lateinit var locationProviderClient: FusedLocationProviderClient
     private lateinit var mCurrentLocation: Location
     private lateinit var mLocationCallback: LocationCallback
-
     val locationPermissionRequest = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-            when {
-                //If successful, startLocationRequests
-                permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
-                    locationPermissionEnabled = true
-                    startLocationRequests()
-                }
-                //If successful at coarse detail, we still want those
-                permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
-                    locationPermissionEnabled = true
-                    startLocationRequests()
-                }
+        when {
+            //If successful, startLocationRequests
+            permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
+                locationPermissionEnabled = true
+                startLocationRequests()
+            }
+            //If successful at coarse detail, we still want those
+            permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                locationPermissionEnabled = true
+                startLocationRequests()
+            }
 
-                else -> {
-                    //Otherwise, send toast saying location is not enabled
-                    locationPermissionEnabled = false
-                    Toast.makeText(this, "Location Not Enabled", Toast.LENGTH_LONG)
-                }
+            else -> {
+                //Otherwise, send toast saying location is not enabled
+                locationPermissionEnabled = false
+                Toast.makeText(this, "Location Not Enabled", Toast.LENGTH_LONG)
             }
         }
+    }
+
+    // picture stuff
+    var currentPhotoPath: String = ""
+    val newEditPicLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if(it.resultCode == Activity.RESULT_OK)
+        {
+            // create new marker with result
+            addNewMarker()
+        }
+    }
+    val takePictureResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        result: ActivityResult ->
+        if(result.resultCode == Activity.RESULT_CANCELED) {
+            Log.d("MainActivity", "Take picture activity cancelled")
+        } else {
+            Log.d("MainActivity", "Picture taken")
+            // launch new pic activity
+            val newPicIntent = Intent(this@MainActivity, NewEditPicActivity::class.java)
+            // pass in image location
+            newPicIntent.putExtra("PIC_LOC", currentPhotoPath)
+            // pass in current date formatted nicely
+            newPicIntent.putExtra(
+                "DATE",
+                SimpleDateFormat("MMM d, yyyy", Locale.US).format(Date())
+            )
+            Log.d("MainActivity", "Launching new pic activity...?")
+            newEditPicLauncher.launch(newPicIntent)
+        }
+    }
 
     // map stuff
     private lateinit var mapsFragment: OpenStreetMapFragment
@@ -85,7 +101,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // fab click listener
         findViewById<FloatingActionButton>(R.id.floatingActionButton).setOnClickListener{
+            // take photo, which will launch activity
             takeNewPhoto()
         }
 

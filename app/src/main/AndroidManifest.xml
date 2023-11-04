@@ -34,6 +34,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".NewEditPicActivity.NewEditPicActivity"
+            android:exported="false" />
 
         <provider
             android:authorities="com.example.geocamera.fileprovider"
