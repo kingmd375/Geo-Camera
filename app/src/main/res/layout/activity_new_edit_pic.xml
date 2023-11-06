@@ -9,7 +9,7 @@
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Save"
+        android:text="@string/save_button_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 
@@ -18,17 +18,18 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!--ImageView
+        <ImageView
             android:id="@+id/imageView"
             android:layout_width="match_parent"
             android:layout_height="400dp"
-            android:src="@tools:sample/avatars" /-->
+            android:src="@drawable/ic_launcher_background"
+            android:contentDescription="TODO" />
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/dateText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Date" />
+            android:text="@string/default_date" />
 
         <EditText
             android:id="@+id/descText"
@@ -36,7 +37,7 @@
             android:layout_height="250dp"
             android:ems="10"
             android:gravity="start|top"
-            android:hint="Description..."
+            android:hint="@string/desc_hint"
             android:inputType="textMultiLine" />
     </LinearLayout>
 

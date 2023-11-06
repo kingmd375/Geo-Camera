@@ -34,6 +34,7 @@ import com.example.geocamera.Util.stopLocationUpdates
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationServices
+import org.osmdroid.util.GeoPoint
 
 class MainActivity : AppCompatActivity() {
     // location stuff
@@ -66,15 +67,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     // picture stuff
-    var currentPhotoPath: String = ""
-    val newEditPicLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+    private var currentPhotoPath: String = ""
+    private val newEditPicLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if(it.resultCode == Activity.RESULT_OK)
         {
+            Log.d("MainActivity", "result received")
+
             // create new marker with result
-            addNewMarker()
+            val picLoc = it.data?.getStringExtra("PIC_LOC")
+            val date = it.data?.getStringExtra("DATE")
+            val desc = it.data?.getStringExtra("DESC")
+            mapsFragment.addMarker(GeoPoint(mCurrentLocation), numMarkers)
+            // increment marker count
+            numMarkers++
         }
     }
-    val takePictureResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+    private val takePictureResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         result: ActivityResult ->
         if(result.resultCode == Activity.RESULT_CANCELED) {
             Log.d("MainActivity", "Take picture activity cancelled")
@@ -82,20 +90,23 @@ class MainActivity : AppCompatActivity() {
             Log.d("MainActivity", "Picture taken")
             // launch new pic activity
             val newPicIntent = Intent(this@MainActivity, NewEditPicActivity::class.java)
-            // pass in image location
+            // pass in image id (-1 since it is new)
+            newPicIntent.putExtra("PIC_ID", -1)
+            // pass in image path
             newPicIntent.putExtra("PIC_LOC", currentPhotoPath)
             // pass in current date formatted nicely
             newPicIntent.putExtra(
                 "DATE",
                 SimpleDateFormat("MMM d, yyyy", Locale.US).format(Date())
             )
-            Log.d("MainActivity", "Launching new pic activity...?")
+            Log.d("MainActivity", "Launching new pic activity")
             newEditPicLauncher.launch(newPicIntent)
         }
     }
 
     // map stuff
     private lateinit var mapsFragment: OpenStreetMapFragment
+    private var numMarkers: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
