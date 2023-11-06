@@ -37,8 +37,8 @@ class MarkerRepository(private val markerDao: MarkerDao) {
     // off the main thread.
     @Suppress("RedundantSuspendModifier")
     @WorkerThread
-    suspend fun update(homeMaintenanceTask: Marker) {
-        markerDao.update(homeMaintenanceTask)
+    suspend fun updateDesc(id: Int, newDesc: String) {
+        markerDao.updateDesc(id, newDesc)
     }
 
     @Suppress("RedundantSuspendModifier")

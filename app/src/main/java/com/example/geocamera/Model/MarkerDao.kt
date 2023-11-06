@@ -29,9 +29,9 @@ interface MarkerDao {
     @Query("DELETE FROM marker_table")
     suspend fun deleteAll()
 
-    //Update a single word
-    @Update
-    suspend fun update(marker: Marker):Int
+    //Update marker with the given id
+    @Query("UPDATE marker_table SET marker_description=:newDesc WHERE id=:id")
+    suspend fun updateDesc(id: Int, newDesc: String)
 
     @Query("DELETE from marker_table WHERE id=:id")
     suspend fun deleteMarker(id: Int)

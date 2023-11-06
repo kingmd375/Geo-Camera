@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 @Database(entities = arrayOf(Marker::class), version = 1, exportSchema = false)
 
 abstract class MarkerDatabase : RoomDatabase() {
-    abstract fun homeMaintenanceTaskDao(): MarkerDao
+    abstract fun markerDao(): MarkerDao
 
     private class HomeMaintenanceDatabaseCallback(
         private val scope: CoroutineScope
@@ -22,7 +22,7 @@ abstract class MarkerDatabase : RoomDatabase() {
 
             INSTANCE?.let { database ->
                 scope.launch {
-                    val taskDao = database.homeMaintenanceTaskDao()
+                    val taskDao = database.markerDao()
                     // Delete all content here.
                     taskDao.deleteAll()
                 }

@@ -145,7 +145,9 @@ class OpenStreetMapFragment : Fragment(), Marker.OnMarkerClickListener {
     }
 
     override fun onMarkerClick(marker: Marker?, mapView: MapView?): Boolean {
-        marker?.id?.let { Log.d("OpenStreetMapFragment", it) }
+        marker?.id?.let { Log.d("MapsFragment", it) }
+        // get marker info to be displayed
+        // start new edit marker activity
 
         return true
     }

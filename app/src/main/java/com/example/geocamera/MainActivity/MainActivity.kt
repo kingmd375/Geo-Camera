@@ -15,8 +15,11 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import com.example.geocamera.MarkersApplication
+import com.example.geocamera.Model.Marker
 import com.example.geocamera.NewEditPicActivity.NewEditPicActivity
 import com.example.geocamera.R
 import com.example.geocamera.Util.LocationUtilCallback
@@ -37,6 +40,15 @@ import com.google.android.gms.location.LocationServices
 import org.osmdroid.util.GeoPoint
 
 class MainActivity : AppCompatActivity() {
+    // create view model
+    private val mapViewModel: MapViewModel by viewModels {
+        MapViewModelFactory((application as MarkersApplication).repository)
+    }
+
+    // map stuff
+    private lateinit var mapsFragment: OpenStreetMapFragment
+    private var numMarkers: Int = 0
+
     // location stuff
     private var locationPermissionEnabled: Boolean = false
     private var locationRequestsEnabled: Boolean = false
@@ -73,13 +85,37 @@ class MainActivity : AppCompatActivity() {
         {
             Log.d("MainActivity", "result received")
 
-            // create new marker with result
-            val picLoc = it.data?.getStringExtra("PIC_LOC")
-            val date = it.data?.getStringExtra("DATE")
-            val desc = it.data?.getStringExtra("DESC")
-            mapsFragment.addMarker(GeoPoint(mCurrentLocation), numMarkers)
-            // increment marker count
-            numMarkers++
+            // get marker ID
+            var picID = it.data?.getStringExtra("PIC_ID")?.toInt()
+            if (picID == null) picID = -1
+
+            if(picID == -1) {
+                // create new marker
+                // get data from new pic activity
+                var picLoc = it.data?.getStringExtra("PIC_LOC")
+                var date = it.data?.getStringExtra("DATE")
+                var desc = it.data?.getStringExtra("DESC")
+                if (picLoc == null) picLoc = "No path"
+                if (date == null) date = "No date"
+                if (desc == null) desc = ""
+
+                // add new marker to map
+                mapsFragment.addMarker(GeoPoint(mCurrentLocation), numMarkers)
+                // add new marker to database
+                mapViewModel.add(Marker(numMarkers, mCurrentLocation.toString(), picLoc, date, desc))
+
+                // increment marker count
+                numMarkers++
+            }
+            else {
+                // update existing marker
+                // only description is the only thing that can change
+                var desc = it.data?.getStringExtra("DESC")
+                if (desc == null) desc = ""
+
+                // update database entry
+                mapViewModel.updateDesc(picID, desc)
+            }
         }
     }
     private val takePictureResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -90,7 +126,7 @@ class MainActivity : AppCompatActivity() {
             Log.d("MainActivity", "Picture taken")
             // launch new pic activity
             val newPicIntent = Intent(this@MainActivity, NewEditPicActivity::class.java)
-            // pass in image id (-1 since it is new)
+            // pass in id = -1 to represent new marker
             newPicIntent.putExtra("PIC_ID", -1)
             // pass in image path
             newPicIntent.putExtra("PIC_LOC", currentPhotoPath)
@@ -104,9 +140,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // map stuff
-    private lateinit var mapsFragment: OpenStreetMapFragment
-    private var numMarkers: Int = 0
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -164,6 +198,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+
     // Camera
 
     private fun createFilePath(): String {
@@ -180,19 +216,9 @@ class MainActivity : AppCompatActivity() {
         return image.absolutePath
     }
 
-    private fun addNewMarker() {
-        // get image
-        // create dialogue
-        // receive description
-        // make marker options
-        // add new marker (pic, location, time stamp, description)
-    }
+
 
     // Location
-
-    private fun addLocationOverlay() {
-
-    }
 
     //LocationUtilCallback object
     //Dynamically defining two results from locationUtils
