@@ -16,6 +16,10 @@ class MapViewModel(private val repository: MarkerRepository) : ViewModel() {
     // - Repository is completely separated from the UI through the ViewModel.
     val allWords: LiveData<List<Marker>> = repository.allMarkers.asLiveData()
 
+    fun getMarker(id: Int): Marker {
+        return repository.getMarker(id)
+    }
+
     fun updateDesc(id: Int, newDesc: String) {
         viewModelScope.launch {
             repository.updateDesc(id, newDesc)

@@ -163,7 +163,7 @@ class MainActivity : AppCompatActivity() {
 
         //Get access to mapsFragment object
         mapsFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainerView)
-                as OpenStreetMapFragment? ?:OpenStreetMapFragment.newInstance().also{
+                as OpenStreetMapFragment? ?:OpenStreetMapFragment.newInstance(this).also{
             replaceFragmentInActivity(it, R.id.fragmentContainerView)
         }
     }
@@ -184,6 +184,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    public fun markerClicked(markerId: Int) {
+
+        val editPicIntent = Intent(this@MainActivity, NewEditPicActivity::class.java)
+        // get data for marker clicked
+        val marker = mapViewModel.getMarker(markerId)
+        editPicIntent.putExtra("PIC_LOC", marker.markerImagePath)
+        editPicIntent.putExtra("DATE", marker.markerDate)
+        editPicIntent.putExtra("DESC", marker.markerDescription)
+
+        // start new edit marker activity
+        newEditPicLauncher.launch(editPicIntent)
+    }
+
+
+
+    // Camera functions
+
     private fun takeNewPhoto(){
         // start camera app
         val picIntent = Intent().setAction(MediaStore.ACTION_IMAGE_CAPTURE)
@@ -197,10 +214,6 @@ class MainActivity : AppCompatActivity() {
             takePictureResultLauncher.launch(picIntent)
         }
     }
-
-
-
-    // Camera
 
     private fun createFilePath(): String {
         val timeStamp =
@@ -218,7 +231,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
-    // Location
+    // Location functions
 
     //LocationUtilCallback object
     //Dynamically defining two results from locationUtils

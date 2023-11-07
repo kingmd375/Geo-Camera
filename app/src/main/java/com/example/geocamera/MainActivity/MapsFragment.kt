@@ -22,16 +22,18 @@ import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
-class OpenStreetMapFragment : Fragment(), Marker.OnMarkerClickListener {
+class OpenStreetMapFragment(parent: MainActivity) : Fragment(), Marker.OnMarkerClickListener {
     private lateinit var mMap: MapView
     private lateinit var mLocationOverlay: MyLocationNewOverlay
     private lateinit var mCompassOverlay: CompassOverlay
     private var curLocation = GeoPoint(34.74, -92.28)
+    private var parentActivity = parent
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
         }
+        parentActivity
     }
 
     override fun onCreateView(
@@ -113,7 +115,6 @@ class OpenStreetMapFragment : Fragment(), Marker.OnMarkerClickListener {
         curLocation = geoPoint
         val mapController = mMap.controller
         mapController.setCenter(curLocation);
-
     }
 
     fun addMarker(geoPoint: GeoPoint, id: Int) {
@@ -146,8 +147,11 @@ class OpenStreetMapFragment : Fragment(), Marker.OnMarkerClickListener {
 
     override fun onMarkerClick(marker: Marker?, mapView: MapView?): Boolean {
         marker?.id?.let { Log.d("MapsFragment", it) }
-        // get marker info to be displayed
-        // start new edit marker activity
+
+        // call function in MainActivity to view marker
+        if (marker != null) {
+            parentActivity.markerClicked(marker.id.toInt())
+        }
 
         return true
     }
@@ -160,8 +164,8 @@ class OpenStreetMapFragment : Fragment(), Marker.OnMarkerClickListener {
          * @return A new instance of fragment OpenStreetMapFragment.
          */
         @JvmStatic
-        fun newInstance() =
-            OpenStreetMapFragment().apply {
+        fun newInstance(parent: MainActivity) =
+            OpenStreetMapFragment(parent).apply {
                 arguments = Bundle().apply {
                 }
             }
