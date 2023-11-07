@@ -22,18 +22,16 @@ import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
-class OpenStreetMapFragment(parent: MainActivity) : Fragment(), Marker.OnMarkerClickListener {
+class OpenStreetMapFragment() : Fragment(), Marker.OnMarkerClickListener {
     private lateinit var mMap: MapView
     private lateinit var mLocationOverlay: MyLocationNewOverlay
     private lateinit var mCompassOverlay: CompassOverlay
     private var curLocation = GeoPoint(34.74, -92.28)
-    private var parentActivity = parent
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
         }
-        parentActivity
     }
 
     override fun onCreateView(
@@ -150,7 +148,7 @@ class OpenStreetMapFragment(parent: MainActivity) : Fragment(), Marker.OnMarkerC
 
         // call function in MainActivity to view marker
         if (marker != null) {
-            parentActivity.markerClicked(marker.id.toInt())
+            //markerClickedFun(marker.id.toInt())
         }
 
         return true
@@ -164,8 +162,8 @@ class OpenStreetMapFragment(parent: MainActivity) : Fragment(), Marker.OnMarkerC
          * @return A new instance of fragment OpenStreetMapFragment.
          */
         @JvmStatic
-        fun newInstance(parent: MainActivity) =
-            OpenStreetMapFragment(parent).apply {
+        fun newInstance() =
+            OpenStreetMapFragment().apply {
                 arguments = Bundle().apply {
                 }
             }

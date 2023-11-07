@@ -14,7 +14,7 @@ class MapViewModel(private val repository: MarkerRepository) : ViewModel() {
     // - We can put an observer on the data (instead of polling for changes) and only update the
     //   the UI when the data actually changes.
     // - Repository is completely separated from the UI through the ViewModel.
-    val allWords: LiveData<List<Marker>> = repository.allMarkers.asLiveData()
+    val allMarkers: LiveData<List<Marker>> = repository.allMarkers.asLiveData()
 
     fun getMarker(id: Int): Marker {
         return repository.getMarker(id)

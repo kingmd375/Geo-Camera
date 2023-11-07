@@ -163,8 +163,20 @@ class MainActivity : AppCompatActivity() {
 
         //Get access to mapsFragment object
         mapsFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainerView)
-                as OpenStreetMapFragment? ?:OpenStreetMapFragment.newInstance(this).also{
+                as OpenStreetMapFragment? ?:OpenStreetMapFragment.newInstance().also{
             replaceFragmentInActivity(it, R.id.fragmentContainerView)
+        }
+
+        // Populate existing markers onto map
+        for (marker in mapViewModel.allMarkers.value!!) {
+            // just need id and location
+            marker.id?.let {
+                mapsFragment.addMarker(
+                    GeoPoint(Location(marker.markerLocation)),
+                    it
+                )
+                numMarkers++
+            }
         }
     }
 

@@ -43,7 +43,7 @@ class MarkerRepository(private val markerDao: MarkerDao) {
 
     @Suppress("RedundantSuspendModifier")
     @WorkerThread
-    suspend fun deleteTask(id: Int) {
+    suspend fun deleteMarker(id: Int) {
         Log.d("Model","Deleting id: $id")
         markerDao.deleteMarker(id)
     }
