@@ -1,5 +1,6 @@
 package com.example.geocamera.MainActivity
 
+import android.app.Activity
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
@@ -22,7 +23,7 @@ import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
-class OpenStreetMapFragment() : Fragment(), Marker.OnMarkerClickListener {
+class OpenStreetMapFragment : Fragment() {
     private lateinit var mMap: MapView
     private lateinit var mLocationOverlay: MyLocationNewOverlay
     private lateinit var mCompassOverlay: CompassOverlay
@@ -115,11 +116,11 @@ class OpenStreetMapFragment() : Fragment(), Marker.OnMarkerClickListener {
         mapController.setCenter(curLocation);
     }
 
-    fun addMarker(geoPoint: GeoPoint, id: Int) {
+    fun addMarker(geoPoint: GeoPoint, id: Int, clickFun: Marker.OnMarkerClickListener) {
         val startMarker = Marker(mMap)
         startMarker.position = geoPoint
         startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-        startMarker.setOnMarkerClickListener(this)
+        startMarker.setOnMarkerClickListener(clickFun)
         startMarker.id = id.toString()
 
 
@@ -143,16 +144,16 @@ class OpenStreetMapFragment() : Fragment(), Marker.OnMarkerClickListener {
         }
     }
 
-    override fun onMarkerClick(marker: Marker?, mapView: MapView?): Boolean {
-        marker?.id?.let { Log.d("MapsFragment", it) }
-
-        // call function in MainActivity to view marker
-        if (marker != null) {
-            //markerClickedFun(marker.id.toInt())
-        }
-
-        return true
-    }
+//    override fun onMarkerClick(marker: Marker?, mapView: MapView?): Boolean {
+//        marker?.id?.let { Log.d("MapsFragment", it) }
+//
+//        // call function in MainActivity to view marker
+//        if (marker != null) {
+//            val main = getActivity()
+//        }
+//
+//        return true
+//    }
 
     companion object {
         /**

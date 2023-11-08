@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 class Marker (
     //Note that we now allow for ID as the primary key
     //It needs to be nullable when creating a new word in the database
-    @PrimaryKey(autoGenerate = true) val id: Int?,
+    @PrimaryKey val id: Int?,
     @ColumnInfo(name = "marker_location") var markerLocation: String,
     @ColumnInfo(name = "marker_image_path") var markerImagePath: String,
     @ColumnInfo(name = "marker_date") var markerDate: String,

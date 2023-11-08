@@ -10,6 +10,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.text.set
 import androidx.lifecycle.lifecycleScope
 import com.example.geocamera.R
 import kotlinx.coroutines.Dispatchers
@@ -37,13 +38,24 @@ class NewEditPicActivity : AppCompatActivity() {
 
         // get/set image and date
         picLoc = intent.getStringExtra("PIC_LOC").toString()
-        dateText.text = intent.getStringExtra("DATE")
+        val picDate = intent.getStringExtra("DATE")
+        dateText.text = picDate
+
+        // if marker id isn't -1, add its info to views
+        val id = intent.getIntExtra("PIC_ID", 0)
+        Log.d("NewEditPic", "id is $id")
+        if (id != -1) {
+            // get description of existing of existing marker
+            descText.setText(intent.getStringExtra("DESC"))
+        }
 
         // set onClick listener of button
         saveButton.setOnClickListener {
             val retIntent = Intent()
+            retIntent.putExtra("PIC_ID", id)
             retIntent.putExtra("PIC_LOC", picLoc)
-            retIntent.putExtra("DESCRIPTION", desc)
+            retIntent.putExtra("DATE", picDate)
+            retIntent.putExtra("DESC", descText.text.toString())
             setResult(RESULT_OK, retIntent)
             finish()
         }

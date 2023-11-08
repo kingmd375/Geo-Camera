@@ -1,5 +1,6 @@
 package com.example.geocamera.MainActivity
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -7,6 +8,7 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.geocamera.Model.Marker
 import com.example.geocamera.Model.MarkerRepository
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 class MapViewModel(private val repository: MarkerRepository) : ViewModel() {
@@ -14,19 +16,20 @@ class MapViewModel(private val repository: MarkerRepository) : ViewModel() {
     // - We can put an observer on the data (instead of polling for changes) and only update the
     //   the UI when the data actually changes.
     // - Repository is completely separated from the UI through the ViewModel.
-    val allMarkers: LiveData<List<Marker>> = repository.allMarkers.asLiveData()
+    var allMarkers: LiveData<List<Marker>> = repository.allMarkers.asLiveData()
 
     fun getMarker(id: Int): Marker {
         return repository.getMarker(id)
     }
 
-    fun updateDesc(id: Int, newDesc: String) {
-        viewModelScope.launch {
+    suspend fun updateDesc(id: Int, newDesc: String) {
+        coroutineScope {
             repository.updateDesc(id, newDesc)
         }
     }
 
     fun add(marker: Marker) {
+        Log.d("MapViewModel", "adding marker")
         viewModelScope.launch {
             repository.insert(marker)
         }

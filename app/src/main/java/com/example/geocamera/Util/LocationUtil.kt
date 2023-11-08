@@ -34,8 +34,6 @@ fun createLocationCallback(callback: LocationUtilCallback): LocationCallback {
             locationResult.lastLocation?.let {
                 //Send the location out through the [callback] object
                 callback.locationUpdatedCallback(it)
-                //And log to make sure we don't keep doing it when we aren't supposed to
-                Log.d("LocationUtil","Current Location is [Lat: ${it.latitude}, Long: ${it.longitude}]")
             }
         }
     }

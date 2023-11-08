@@ -37,9 +37,14 @@ import com.example.geocamera.Util.stopLocationUpdates
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), org.osmdroid.views.overlay.Marker.OnMarkerClickListener {
     // create view model
     private val mapViewModel: MapViewModel by viewModels {
         MapViewModelFactory((application as MarkersApplication).repository)
@@ -47,7 +52,7 @@ class MainActivity : AppCompatActivity() {
 
     // map stuff
     private lateinit var mapsFragment: OpenStreetMapFragment
-    private var numMarkers: Int = 0
+    private var nextMarkerId: Int = 0
 
     // location stuff
     private var locationPermissionEnabled: Boolean = false
@@ -86,10 +91,10 @@ class MainActivity : AppCompatActivity() {
             Log.d("MainActivity", "result received")
 
             // get marker ID
-            var picID = it.data?.getStringExtra("PIC_ID")?.toInt()
-            if (picID == null) picID = -1
+            val picID = it.data?.getIntExtra("PIC_ID", -1)
 
             if(picID == -1) {
+                Log.d("MainActivity", "Making new marker")
                 // create new marker
                 // get data from new pic activity
                 var picLoc = it.data?.getStringExtra("PIC_LOC")
@@ -99,22 +104,22 @@ class MainActivity : AppCompatActivity() {
                 if (date == null) date = "No date"
                 if (desc == null) desc = ""
 
-                // add new marker to map
-                mapsFragment.addMarker(GeoPoint(mCurrentLocation), numMarkers)
                 // add new marker to database
-                mapViewModel.add(Marker(numMarkers, mCurrentLocation.toString(), picLoc, date, desc))
-
-                // increment marker count
-                numMarkers++
+                val newMarker = Marker(nextMarkerId, GeoPoint(Location(mCurrentLocation)).toString(), picLoc, date, desc)
+                mapViewModel.add(newMarker)
             }
             else {
                 // update existing marker
-                // only description is the only thing that can change
+                // description is the only thing that can change
                 var desc = it.data?.getStringExtra("DESC")
                 if (desc == null) desc = ""
 
                 // update database entry
-                mapViewModel.updateDesc(picID, desc)
+                CoroutineScope(SupervisorJob()).launch {
+                    if (picID != null) {
+                        mapViewModel.updateDesc(picID, desc)
+                    }
+                }
             }
         }
     }
@@ -167,15 +172,30 @@ class MainActivity : AppCompatActivity() {
             replaceFragmentInActivity(it, R.id.fragmentContainerView)
         }
 
-        // Populate existing markers onto map
-        for (marker in mapViewModel.allMarkers.value!!) {
-            // just need id and location
-            marker.id?.let {
-                mapsFragment.addMarker(
-                    GeoPoint(Location(marker.markerLocation)),
-                    it
-                )
-                numMarkers++
+        // Observer for all markers
+        // populates markers at start and adds new ones when they are created
+        mapViewModel.allMarkers.observe(this) { markers ->
+            Log.d("MainActivity", "Observing...")
+            for (marker in markers) {
+                // draw markers not on map (have next highest ID)
+                Log.d("MainActivity", "marker with id ${marker.id}, next id is $nextMarkerId")
+                if (marker.id == nextMarkerId)
+                {
+                    // don't draw 1st marker since it is totally empty
+                    if (nextMarkerId == 0) {
+                        Log.d("MainActivity", "Skipping first")
+                        nextMarkerId++
+                    }
+                    else {
+                        Log.d("MainActivity", "Drawing marker, location is ${marker.markerLocation}")
+                        mapsFragment.addMarker(
+                            GeoPoint.fromDoubleString(marker.markerLocation, ','),
+                            nextMarkerId,
+                            this
+                        )
+                        nextMarkerId++
+                    }
+                }
             }
         }
     }
@@ -196,17 +216,31 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    public fun markerClicked(markerId: Int) {
 
-        val editPicIntent = Intent(this@MainActivity, NewEditPicActivity::class.java)
-        // get data for marker clicked
-        val marker = mapViewModel.getMarker(markerId)
-        editPicIntent.putExtra("PIC_LOC", marker.markerImagePath)
-        editPicIntent.putExtra("DATE", marker.markerDate)
-        editPicIntent.putExtra("DESC", marker.markerDescription)
 
-        // start new edit marker activity
-        newEditPicLauncher.launch(editPicIntent)
+    // marker clicked function
+
+    override fun onMarkerClick(
+        marker: org.osmdroid.views.overlay.Marker?,
+        mapView: MapView?
+    ): Boolean {
+        // get marker that was clicked
+        val clickedMarker = marker?.id?.toInt()?.let { mapViewModel.allMarkers.value!![it] }
+
+        // launch new pic activity
+        val newPicIntent = Intent(this@MainActivity, NewEditPicActivity::class.java)
+
+        if (clickedMarker != null) {
+            // pass in id, image path, date, and description
+            newPicIntent.putExtra("PIC_ID", clickedMarker.id)
+            newPicIntent.putExtra("PIC_LOC", clickedMarker.markerImagePath)
+            newPicIntent.putExtra("DATE", clickedMarker.markerDate)
+            newPicIntent.putExtra("DESC", clickedMarker.markerDescription)
+        }
+
+        Log.d("MainActivity", "Launching new pic activity")
+        newEditPicLauncher.launch(newPicIntent)
+        return true
     }
 
 
@@ -264,10 +298,6 @@ class MainActivity : AppCompatActivity() {
         //Populate the current location and log
         override fun locationUpdatedCallback(location: Location) {
             mCurrentLocation = location
-            Log.d(
-                "MainActivity",
-                "Location is [Lat: ${location.latitude}, Long: ${location.longitude}]"
-            )
         }
     }
 
@@ -281,4 +311,6 @@ class MainActivity : AppCompatActivity() {
                 createLocationRequest(this, locationProviderClient, mLocationCallback)
         }
     }
+
+
 }

@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 abstract class MarkerDatabase : RoomDatabase() {
     abstract fun markerDao(): MarkerDao
 
-    private class HomeMaintenanceDatabaseCallback(
+    private class MarkerDatabaseCallback(
         private val scope: CoroutineScope
     ) : RoomDatabase.Callback() {
 
@@ -22,9 +22,12 @@ abstract class MarkerDatabase : RoomDatabase() {
 
             INSTANCE?.let { database ->
                 scope.launch {
-                    val taskDao = database.markerDao()
+                    val markerDao = database.markerDao()
                     // Delete all content here.
-                    taskDao.deleteAll()
+                    markerDao.deleteAll()
+
+                    // add an empty marker
+                    markerDao.insert(Marker(0, "", "", "", ""))
                 }
             }
         }
@@ -44,9 +47,9 @@ abstract class MarkerDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     MarkerDatabase::class.java,
-                    "task_database"
+                    "marker_database"
                 )
-                    .addCallback(HomeMaintenanceDatabaseCallback(scope))
+                    .addCallback(MarkerDatabaseCallback(scope))
                     .build()
                 INSTANCE = instance
                 // return instance

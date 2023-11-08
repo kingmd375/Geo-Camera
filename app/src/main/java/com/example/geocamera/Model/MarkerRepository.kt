@@ -24,12 +24,10 @@ class MarkerRepository(private val markerDao: MarkerDao) {
     // off the main thread.
     @Suppress("RedundantSuspendModifier")
     @WorkerThread
-    suspend fun insert(homeMaintenanceTask: Marker) {
-        //Note that I am pretending this is a network call by adding
-        //a 5 second sleep call here
+    suspend fun insert(marker: Marker) {
         //If you don't run this in a scope that is still active
         //Then the call won't complete
-        markerDao.insert(homeMaintenanceTask)
+        markerDao.insert(marker)
     }
 
     // By default Room runs suspend queries off the main thread, therefore, we don't need to
